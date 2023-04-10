@@ -1,0 +1,58 @@
+stages:
+  - build
+  - style
+  - tests
+  - deploy
+
+build:
+  stage: build
+  tags:
+    - cicd
+  script:
+    - cd ./src/cat/
+    - make s21_cat
+    - cd ../../src/grep/
+    - make s21_grep
+  artifacts:
+    paths:
+      - ./src/build/
+    expire_in: 30 day
+  after_script:
+    - bash ./src/notify.sh build
+
+style:
+  stage: style
+  tags:
+    - cicd
+  script:
+    - cd ./src/cat/
+    - make style
+    - cd ../../src/grep/
+    - make style
+  after_script:
+    - bash ./src/notify.sh style
+
+tests:
+  stage: tests
+  tags:
+    - cicd
+  script:
+    - cd ./src/cat/
+    - make test
+    - cd ../../src/grep/
+    - make test
+  after_script:
+    - bash ./src/notify.sh tests
+
+deploy:
+  stage: deploy
+  tags:
+    - cicd
+  script:
+    - cd ./src/
+    - bash ./deploy.sh
+  dependencies:
+     - build
+  when: manual
+  after_script:
+    - bash ./src/notify.sh deploy
